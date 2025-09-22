@@ -4,7 +4,123 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MCQ Quiz</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+  font-family: Arial, sans-serif;
+  background: #eef2f7;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.quiz-container {
+  background: #fff;
+  padding: 30px 25px;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+.question {
+  font-size: 20px;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.options label {
+  display: block;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+  background: #f9f9f9;
+}
+
+.options input {
+  margin-right: 10px;
+}
+
+.options label:hover {
+  background: #e2e6ef;
+}
+
+.navigation {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: #4CAF50;
+  color: white;
+  transition: 0.2s;
+}
+
+button:hover:not(:disabled) {
+  background: #45a049;
+}
+
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+#results {
+  margin-top: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  color: #333;
+}
+@media (max-width: 480px) {
+  .quiz-container {
+    padding: 20px;
+    width: 95%;
+  }
+
+  .question {
+    font-size: 18px;
+  }
+
+  .options label {
+    font-size: 16px;
+    padding: 8px 10px;
+  }
+
+  button {
+    width: 48%;
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .navigation {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .navigation button {
+    width: 100%;
+  }
+}
+
+  </style>
 </head>
 <body>
   <div class="quiz-container">
@@ -18,7 +134,113 @@
     </div>
     <div id="results"></div>
   </div>
-  <script src="script.js"></script>
+  <script>
+    const quizData = [
+  {
+    question: "What is the capital of France?",
+    options: { A: "London", B: "Paris", C: "Rome", D: "Madrid" },
+    answer: "B"
+  },
+  {
+    question: "Which language is used for web apps?",
+    options: { A: "Python", B: "Java", C: "PHP", D: "All of the above" },
+    answer: "D"
+  },
+  {
+    question: "Who developed Python?",
+    options: { A: "Dennis Ritchie", B: "Bjarne Stroustrup", C: "Guido van Rossum", D: "James Gosling" },
+    answer: "C"
+  },
+  {
+    question: "Python is known as?",
+    options: { A: "A compiled language", B: "An interpreted language", C: "A machine language", D: "An assembly language" },
+    answer: "B"
+  },
+  {
+    question: "Which HTML tag is used to create a hyperlink?",
+    options: { A: "Anchor Tag", B: "Link Tag", C: "Href Tag", D: "Image Tag" },
+    answer: "A"
+  },
+  {
+    question: "Which company developed Java?",
+    options: { A: "Microsoft", B: "Sun Microsystems", C: "Google", D: "Apple" },
+    answer: "B"
+  },
+  {
+    question: "Which CSS property is used to change text color?",
+    options: { A: "font-style", B: "color", C: "text-decoration", D: "background-color" },
+    answer: "B"
+  }
+];
+
+let currentQuestion = 0;
+const userAnswers = {};
+
+const quizContainer = document.getElementById("quiz");
+const prevButton = document.getElementById("prev");
+const nextButton = document.getElementById("next");
+const resultsContainer = document.getElementById("results");
+
+function loadQuestion() {
+  const q = quizData[currentQuestion];
+  const optionsHTML = Object.keys(q.options).map(
+    key => `
+      <label>
+        <input type="radio" name="question" value="${key}" ${userAnswers[currentQuestion] === key ? "checked" : ""}>
+        ${key}. ${q.options[key]}
+      </label>
+    `
+  ).join("");
+
+  quizContainer.innerHTML = `
+    <div class="question">${currentQuestion + 1}. ${q.question}</div>
+    <div class="options">${optionsHTML}</div>
+  `;
+
+  prevButton.disabled = currentQuestion === 0;
+  nextButton.textContent = currentQuestion === quizData.length - 1 ? "Submit" : "Next";
+}
+
+function saveAnswer() {
+  const selected = document.querySelector('input[name="question"]:checked');
+  if (selected) {
+    userAnswers[currentQuestion] = selected.value;
+  }
+}
+
+function showResults() {
+  let score = 0;
+  quizData.forEach((q, index) => {
+    if (userAnswers[index] === q.answer) score++;
+  });
+  quizContainer.style.display = "none";
+  prevButton.style.display = "none";
+  nextButton.style.display = "none";
+  resultsContainer.textContent = `You scored ${score} out of ${quizData.length}`;
+}
+
+nextButton.addEventListener("click", () => {
+  saveAnswer();
+  if (currentQuestion < quizData.length - 1) {
+    currentQuestion++;
+    loadQuestion();
+  } else {
+    showResults();
+  }
+});
+
+prevButton.addEventListener("click", () => {
+  saveAnswer();
+  if (currentQuestion > 0) {
+    currentQuestion--;
+    loadQuestion();
+  }
+});
+
+// Initial load
+loadQuestion();
+
+  </script>
 </body>
 </html>
 
